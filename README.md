@@ -7,4 +7,4 @@ The development version
     devtools::install_github("mlr-org/measures")
     devtools::install_github("PhilippPro/varImp")
     iris.cf <- cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
-    a = varImp(object = iris.cf, measure = "multiclass.Brier")
+    varImp(object = iris.cf, measure = "multiclass.Brier")
