@@ -1,10 +1,6 @@
-library(mlr)
-library(ranger)
-
 context("Output check")
 
-test_that("classification ranger", {
-  library(mlr)
+test_that("varImp functions", {
   library(party)
   library(measures)
   

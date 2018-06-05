@@ -5,25 +5,34 @@
 \title{varImp}
 \usage{
 varImp(object, mincriterion = 0, conditional = FALSE, threshold = 0.2,
-  nperm = 1, OOB = TRUE, pre1.0_0 = conditional, method = c("ovo",
-  "ova"))
+  nperm = 1, OOB = TRUE, pre1.0_0 = conditional,
+  measure = "multiclass.Brier")
 }
 \arguments{
-\item{object}{}
+\item{object}{an object as returned by cforest.}
 
-\item{mincriterion}{}
+\item{mincriterion}{the value of the test statistic or 1 - p-value that must be exceeded in order to include a 
+split in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.}
 
-\item{conditional}{}
+\item{conditional}{the value of the test statistic or 1 - p-value that must be exceeded in order to include a split 
+in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.}
 
-\item{threshold}{}
+\item{threshold}{the threshold value for (1 - p-value) of the association between the variable of interest and a 
+covariate, which must be exceeded inorder to include the covariate in the conditioning scheme for the variable of 
+interest (only relevant if conditional = TRUE). A threshold value of zero includes all covariates.}
 
-\item{nperm}{}
+\item{nperm}{the number of permutations performed.}
 
-\item{OOB}{}
+\item{OOB}{a logical determining whether the importance is computed from the out-of-bag sample or the learning 
+sample (not suggested).}
 
-\item{pre1.0_0}{}
+\item{pre1.0_0}{Prior to party version 1.0-0, the actual data values were permuted according to the original 
+permutation importance suggested by Breiman (2001). Now the assignments to child nodes of splits in the variable 
+of interest are permuted as described by Hapfelmeier et al. (2012), which allows for missing values in the 
+explanatory variables and is more efficient wrt memory consumption and computing time. This method does not 
+apply to conditional variable importances.}
 
-\item{method}{}
+\item{measure}{the name of the measure of the 'measures' package that should be used for the variable importance calculation.}
 }
 \value{
 vector with computed permutation importance for each variable
@@ -36,7 +45,5 @@ varImp
 data(iris)
 iris.cf <- cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
 set.seed(123)
-a = varImp(object = iris.cf, method = "ovo")
-set.seed(123)
-b = varImp(object = iris.cf, method = "ova") 
+a = varImp(object = iris.cf, measure = "multiclass.Brier")
 }

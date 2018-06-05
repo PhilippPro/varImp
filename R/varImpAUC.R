@@ -2,20 +2,31 @@
 
 #' varImpAUC
 #'
-#' @param object 
-#' @param mincriterion 
-#' @param conditional 
-#' @param threshold 
-#' @param nperm 
-#' @param OOB 
-#' @param pre1.0_0 
-#' @param method 
+#' @param object an object as returned by cforest.
+#' @param mincriterion the value of the test statistic or 1 - p-value that must be exceeded in order to include a 
+#' split in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.
+#' @param conditional the value of the test statistic or 1 - p-value that must be exceeded in order to include a split 
+#' in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.
+#' @param threshold the threshold value for (1 - p-value) of the association between the variable of interest and a 
+#' covariate, which must be exceeded inorder to include the covariate in the conditioning scheme for the variable of 
+#' interest (only relevant if conditional = TRUE). A threshold value of zero includes all covariates.
+#' @param nperm the number of permutations performed.
+#' @param OOB a logical determining whether the importance is computed from the out-of-bag sample or the learning 
+#' sample (not suggested).
+#' @param pre1.0_0 Prior to party version 1.0-0, the actual data values were permuted according to the original 
+#' permutation importance suggested by Breiman (2001). Now the assignments to child nodes of splits in the variable 
+#' of interest are permuted as described by Hapfelmeier et al. (2012), which allows for missing values in the 
+#' explanatory variables and is more efficient wrt memory consumption and computing time. This method does not 
+#' apply to conditional variable importances.
+#' @param method Which method should be used for multiclass AUC. Possible choices  
+#' are one-versus-one ("ovo") variable one-versus all ("ova") variables
 #'
 #' @return vector with computed permutation importance for each variable
 #' @export
+#' @importFrom stats as.formula complete.cases
+#' @importFrom party ctree_control initVariableFrame ctree initVariableFrame
 #'
-#' @examples 
-#' 
+#' @examples  
 #' # multiclass case
 #' data(iris)
 #' iris.cf <- cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
@@ -84,8 +95,7 @@ varImpAUC <- function (object, mincriterion = 0, conditional = FALSE, threshold 
     } else {
       oob <- rep(TRUE, length(xnames))
     }
-    p <- .Call("R_predict", tree, inp, mincriterion, -1L, 
-      PACKAGE = "party")
+    p <- .Call("R_predict", tree, inp, mincriterion, -1L, PACKAGE = "party")
     eoob <- error(p, oob)
     for (j in unique(varIDs(tree))) {
       for (per in 1:nperm) {

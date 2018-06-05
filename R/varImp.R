@@ -2,16 +2,27 @@
 
 #' varImp
 #'
-#' @param object 
-#' @param mincriterion 
-#' @param conditional 
-#' @param threshold 
-#' @param nperm 
-#' @param OOB 
-#' @param pre1.0_0 
-#' @param method 
+#' @param object an object as returned by cforest.
+#' @param mincriterion the value of the test statistic or 1 - p-value that must be exceeded in order to include a 
+#' split in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.
+#' @param conditional the value of the test statistic or 1 - p-value that must be exceeded in order to include a split 
+#' in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.
+#' @param threshold the threshold value for (1 - p-value) of the association between the variable of interest and a 
+#' covariate, which must be exceeded inorder to include the covariate in the conditioning scheme for the variable of 
+#' interest (only relevant if conditional = TRUE). A threshold value of zero includes all covariates.
+#' @param nperm the number of permutations performed.
+#' @param OOB a logical determining whether the importance is computed from the out-of-bag sample or the learning 
+#' sample (not suggested).
+#' @param pre1.0_0 Prior to party version 1.0-0, the actual data values were permuted according to the original 
+#' permutation importance suggested by Breiman (2001). Now the assignments to child nodes of splits in the variable 
+#' of interest are permuted as described by Hapfelmeier et al. (2012), which allows for missing values in the 
+#' explanatory variables and is more efficient wrt memory consumption and computing time. This method does not 
+#' apply to conditional variable importances.
+#' @param measure the name of the measure of the 'measures' package that should be used for the variable importance calculation.
 #'
 #' @return vector with computed permutation importance for each variable
+#' @importFrom utils lsf.str
+#' @importFrom measures multiclass.Brier
 #' @export
 #'
 #' @examples
@@ -19,13 +30,12 @@
 #' data(iris)
 #' iris.cf <- cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
 #' set.seed(123)
-#' a = varImp(object = iris.cf, method = "ovo")
-#' set.seed(123)
-#' b = varImp(object = iris.cf, method = "ova") 
+#' a = varImp(object = iris.cf, measure = "multiclass.Brier")
 varImp <- function (object, mincriterion = 0, conditional = FALSE, threshold = 0.2, 
-  nperm = 1, OOB = TRUE, pre1.0_0 = conditional, method=c("ovo","ova")) { 
+  nperm = 1, OOB = TRUE, pre1.0_0 = conditional, measure = "multiclass.Brier") { 
   # vgl. Janitza
-  method=match.arg(method)
+  if (!(measure %in% lsf.str("package:measures")))
+    stop("measure should be a measure of the measures package")
   response <- object@responses
   input <- object@data@get("input")
   xnames <- colnames(input)
@@ -34,43 +44,15 @@ varImp <- function (object, mincriterion = 0, conditional = FALSE, threshold = 0
   if (length(response@variables) != 1) 
     stop("cannot compute variable importance measure for multivariate response")
   if (conditional || pre1.0_0) {
-    if (!all(complete.cases(inp@variables))) 
+    if (!all(complete.cases(inp@variables)))
       stop("cannot compute variable importance measure with missing values")
   }
-  CLASS <- all(response@is_nominal)
-  ORDERED <- all(response@is_ordinal)
-  if (CLASS) {
-    if (nlevels(y) > 2) {
-      if(method=="ova"){ ########################################################### one-versus-all Verfahren 
-        error <- function(x, oob) {
-          xoob <- t(sapply(x, function(x) x))[oob,]
-          yoob <- y[oob]
-          return(measures::multiclass.AUNU(xoob, yoob))
-        }
-      } else if(method=="ovo"){ ############################# one-versus-one, paarweises Verfahren (Hand & Till)
-        error <- function(x, oob) {
-          xoob <- t(sapply(x, function(x) x))[oob,]
-          yoob <- y[oob]
-          return(measures::multiclass.AU1U(xoob, yoob))
-        }
-      }
-      ############# AUC-Berechnung für den Fall einer binären Zielgröße (s. Janitza) ############################
-    } else { 
-      error <- function(x, oob) {
-        xoob <- sapply(x, function(x) x[1])[oob]
-        yoob <- y[oob]
-        pos = levels(y)[1]
-        return(measures::AUC(xoob, yoob, positive = pos))
-      }
-    }
-  } else {
-    if (ORDERED) {
-      error <- function(x, oob) mean((sapply(x, which.max) != y)[oob])
-    }
-    else {
-      error <- function(x, oob) mean((unlist(x) - y)[oob]^2)
-    }
+  error <- function(x, oob) {
+    xoob <- t(sapply(x, function(x) x))[oob,]
+    yoob <- y[oob]
+    return(measures::multiclass.AUNU(xoob, yoob))
   }
+  
   w <- object@initweights
   if (max(abs(w - 1)) > sqrt(.Machine$double.eps)) 
     warning(sQuote("varImp"), " with non-unity weights might give misleading results")
