@@ -1,5 +1,5 @@
 # varImp
-Variable Importance for arbitrary measures
+Random forest variable importance for arbitrary measures of the [measures](https://github.com/mlr-org/measures) package, which contains the biggest collection of measures for regression and classification in R. 
 
 ## Installation
 The development version
