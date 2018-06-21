@@ -1,8 +1,6 @@
-## mincriterion = 0 so that complete tree is evaluated; 
-## regulate size of considered tree here via, e.g., mincriterion = 0.95
-## or when building the forest in the first place via cforest_control(mincriterion = 0.95)
-
 #' varImpACC
+#' 
+#' Computes the variable importance regarding the accuracy (ACC). 
 #'
 #' @param object an object as returned by cforest.
 #' @param mincriterion the value of the test statistic or 1 - p-value that must be exceeded in order to include a 
@@ -65,7 +63,7 @@ varImpACC <- function (object, mincriterion = 0, conditional = FALSE, threshold 
     } else {
       oob <- rep(TRUE, length(xnames))
     }
-    p <- .Call("R_predict", tree, inp, mincriterion, -1L, PACKAGE = "party")
+    p <- party_intern(tree, inp, mincriterion, -1L, fun = "R_predict") 
     eoob <- error(p, oob)
     for (j in unique(varIDs(tree))) {
       for (per in 1:nperm) {
@@ -81,9 +79,9 @@ varImpACC <- function (object, mincriterion = 0, conditional = FALSE, threshold 
               tree, oob)
           }
           tmp@variables[[j]][which(oob)] <- tmp@variables[[j]][perm]
-          p <- .Call("R_predict", tree, tmp, mincriterion,-1L, PACKAGE = "party")
+          p <- party_intern(tree, tmp, mincriterion, -1L, fun = "R_predict") 
         } else {
-          p <- .Call("R_predict", tree, inp, mincriterion, as.integer(j), PACKAGE = "party")
+          p <- party_intern(tree, inp, mincriterion, as.integer(j), fun = "R_predict") 
         }
         perror[(per + (b - 1) * nperm), j] <- - (error(p,oob) - eoob)
       }

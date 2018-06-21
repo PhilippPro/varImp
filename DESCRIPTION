@@ -1,8 +1,10 @@
 Package: varImp
 Title: RF Variable Importance for arbitrary measures
 Version: 0.1
-Authors@R: person("Philipp", "Probst", email = "philipp_probst@gmx.de", role = c("aut", "cre"))
-Description: Computes the random forest variable importance for arbitrary measures from the 'measures' package.
+Authors@R: c(
+    person("Philipp", "Probst", email = "philipp_probst@gmx.de", role = c("aut", "cre")),
+    person("Silke","Janitza", email = "silke.janitza@gmx.de", role = "ctb"))
+Description: Computes the random forest variable importance (VIMP) for the conditional random forest (cforest) of the 'party' package. Includes a function (varImp) that computes the VIMP for arbitrary measures from the 'measures' package. For calculating the VIMP regarding the measures accuracy and auc two extra functions exist (varImpAUC and varImpACC).
 License: GPL-3
 Encoding: UTF-8
 Depends:

@@ -35,7 +35,7 @@ apply to conditional variable importances.}
 vector with computed permutation importance for each variable
 }
 \description{
-varImpACC
+Computes the variable importance regarding the accuracy (ACC).
 }
 \examples{
 data(iris)

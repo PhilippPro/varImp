@@ -39,7 +39,7 @@ are one-versus-one ("ovo") variable one-versus all ("ova") variables}
 vector with computed permutation importance for each variable
 }
 \description{
-varImpAUC
+Computes the variable importance regarding the AUC. It does also support multiclass classification.
 }
 \examples{
  
@@ -50,4 +50,7 @@ set.seed(123)
 a = varImpAUC(object = iris.cf, method = "ovo")
 set.seed(123)
 b = varImpAUC(object = iris.cf, method = "ova") 
+}
+\references{
+https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-119
 }

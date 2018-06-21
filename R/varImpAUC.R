@@ -1,6 +1,6 @@
-# Berechnung des permutation VIM basierend auf dem AUC für mehrkategoriale Zielgrößen
-
 #' varImpAUC
+#' 
+#' Computes the variable importance regarding the AUC. It does also support multiclass classification.
 #'
 #' @param object an object as returned by cforest.
 #' @param mincriterion the value of the test statistic or 1 - p-value that must be exceeded in order to include a 
@@ -20,11 +20,12 @@
 #' apply to conditional variable importances.
 #' @param method Which method should be used for multiclass AUC. Possible choices  
 #' are one-versus-one ("ovo") variable one-versus all ("ova") variables
+#' @references https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-119
 #'
 #' @return vector with computed permutation importance for each variable
 #' @export
 #' @importFrom stats as.formula complete.cases
-#' @importFrom party ctree_control initVariableFrame ctree initVariableFrame
+#' @importFrom party ctree_control initVariableFrame ctree initVariableFrame party_intern
 #'
 #' @examples  
 #' # multiclass case
@@ -95,7 +96,7 @@ varImpAUC <- function (object, mincriterion = 0, conditional = FALSE, threshold 
     } else {
       oob <- rep(TRUE, length(xnames))
     }
-    p <- .Call("R_predict", tree, inp, mincriterion, -1L, PACKAGE = "party")
+    p <- party_intern(tree, inp, mincriterion, -1L, fun = "R_predict") 
     eoob <- error(p, oob)
     for (j in unique(varIDs(tree))) {
       for (per in 1:nperm) {
@@ -111,10 +112,9 @@ varImpAUC <- function (object, mincriterion = 0, conditional = FALSE, threshold 
               tree, oob)
           }
           tmp@variables[[j]][which(oob)] <- tmp@variables[[j]][perm]
-          p <- .Call("R_predict", tree, tmp, mincriterion,-1L, PACKAGE = "party")
+          p <- party_intern(tree, tmp, mincriterion, -1L, fun = "R_predict") 
         } else {
-          p <- .Call("R_predict", tree, inp, mincriterion, 
-            as.integer(j), PACKAGE = "party")
+          p <- party_intern(tree, inp, mincriterion, as.integer(j), fun = "R_predict") 
         }
         perror[(per + (b - 1) * nperm), j] <- - (error(p,oob) - eoob)
       }

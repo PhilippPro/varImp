@@ -38,7 +38,7 @@ apply to conditional variable importances.}
 vector with computed permutation importance for each variable
 }
 \description{
-varImp
+Computes the variable importance for arbitrary measures from the 'measures' package.
 }
 \examples{
 # multiclass case
