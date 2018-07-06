@@ -19,7 +19,7 @@
 #' explanatory variables and is more efficient wrt memory consumption and computing time. This method does not 
 #' apply to conditional variable importances.
 #' @param method Which method should be used for multiclass AUC. Possible choices  
-#' are one-versus-one ("ovo") variable one-versus all ("ova") variables
+#' are one-versus-one ("ovo") classes and one-versus all ("ova") classes.
 #' @references https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-119
 #'
 #' @return vector with computed permutation importance for each variable

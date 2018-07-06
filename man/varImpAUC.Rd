@@ -33,7 +33,7 @@ explanatory variables and is more efficient wrt memory consumption and computing
 apply to conditional variable importances.}
 
 \item{method}{Which method should be used for multiclass AUC. Possible choices
-are one-versus-one ("ovo") variable one-versus all ("ova") variables}
+are one-versus-one ("ovo") classes and one-versus all ("ova") classes.}
 }
 \value{
 vector with computed permutation importance for each variable
