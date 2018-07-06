@@ -31,7 +31,10 @@ test_that("varImp functions", {
   a = varImpAUC(object = iris.cf, method = "ovo")
   set.seed(123)
   b = varImpAUC(object = iris.cf, method = "ova")
+  set.seed(123)
+  c = varImpACC(object = iris.cf)
   
   expect_true(all(!is.na(a)))
   expect_true(all(!is.na(b)))
+  expect_true(all(!is.na(c)))
 })
