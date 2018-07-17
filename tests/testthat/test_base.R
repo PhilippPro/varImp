@@ -4,15 +4,16 @@ test_that("varImp functions", {
   library(party)
   library(measures)
   
+  # regression
+  readingSkills.cf <- cforest(score ~ ., data = readingSkills, 
+    control = cforest_unbiased(mtry = 2, ntree = 50))
+  varImp(object = readingSkills.cf, measure = "MSE")
+  
   iris.cf <- cforest(Species ~ ., data = iris,control = cforest_unbiased(mtry = 2, ntree = 50))
   varImpAUC(object = iris.cf, method = "ovo")
   # Erweitern auf beliebige Maße?
   
   # binary case
-  readingSkills.cf <- cforest(score ~ ., data = readingSkills, 
-    control = cforest_unbiased(mtry = 2, ntree = 50))
-  varImpAUC(object = readingSkills.cf, method = "ovo")
-  
   iris2 = iris
   iris2$Species = factor(iris$Species == "versicolor")
   iris.cf <- cforest(Species ~ ., data = iris2,control = cforest_unbiased(mtry = 2, ntree = 50))
@@ -24,6 +25,9 @@ test_that("varImp functions", {
   # c = varimpAUC(object = iris.cf) # current party implementation is wrong!
   expect_equal(a,b)
   # expect_equal(b,c)
+  d = varImp(object = iris.cf, measure = "Brier", positive = "FALSE")
+  e = varImp(object = iris.cf, measure = "ACC")
+  f = varImp(object = iris.cf, measure = "MMCE")
   
   # multiclass case
   iris.cf <- cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))

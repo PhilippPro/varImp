@@ -52,6 +52,8 @@ varImpAUC <- function (object, mincriterion = 0, conditional = FALSE, threshold 
   }
   CLASS <- all(response@is_nominal)
   ORDERED <- all(response@is_ordinal)
+  if (!CLASS & !ORDERED)
+    stop("only calculable for classification")
   if (CLASS) {
     if (nlevels(y) > 2) {
       if(method=="ova"){ ########################################################### one-versus-all Verfahren 

@@ -3,6 +3,7 @@
 export(varImp)
 export(varImpACC)
 export(varImpAUC)
+importFrom(measures,listAllMeasures)
 importFrom(measures,multiclass.Brier)
 importFrom(party,ctree)
 importFrom(party,ctree_control)

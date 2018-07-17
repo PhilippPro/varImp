@@ -19,10 +19,11 @@
 #' explanatory variables and is more efficient wrt memory consumption and computing time. This method does not 
 #' apply to conditional variable importances.
 #' @param measure the name of the measure of the 'measures' package that should be used for the variable importance calculation.
-#'
+#' @param ... further arguments (like positive or negativ class) that are needed by the measure
+#' @details Many measures have not been tested for the usefulness of random forests variable importance. Use at your own risk.
 #' @return vector with computed permutation importance for each variable
 #' @importFrom utils lsf.str
-#' @importFrom measures multiclass.Brier
+#' @importFrom measures multiclass.Brier listAllMeasures
 #' @export
 #'
 #' @examples
@@ -32,10 +33,13 @@
 #' set.seed(123)
 #' a = varImp(object = iris.cf, measure = "multiclass.Brier")
 varImp <- function (object, mincriterion = 0, conditional = FALSE, threshold = 0.2, 
-  nperm = 1, OOB = TRUE, pre1.0_0 = conditional, measure = "multiclass.Brier") { 
+  nperm = 1, OOB = TRUE, pre1.0_0 = conditional, measure = "multiclass.Brier", ...) { 
   # vgl. Janitza
-  if (!(measure %in% lsf.str("package:measures")))
+  
+  measureList <- listAllMeasures()
+  if (!(measure %in% measureList[, 1]))
     stop("measure should be a measure of the measures package")
+  
   response <- object@responses
   input <- object@data@get("input")
   xnames <- colnames(input)
@@ -47,10 +51,33 @@ varImp <- function (object, mincriterion = 0, conditional = FALSE, threshold = 0
     if (!all(complete.cases(inp@variables)))
       stop("cannot compute variable importance measure with missing values")
   }
-  error <- function(x, oob) {
-    xoob <- t(sapply(x, function(x) x))[oob,]
-    yoob <- y[oob]
-    return(measures::multiclass.AUNU(xoob, yoob))
+  
+  CLASS <- all(response@is_nominal)
+  PROB <- measureList$probabilities[measureList[,1] == measure]
+
+  if (CLASS) {
+    if (PROB) {
+      error <- function(x, oob, ...) {
+        xoob <- t(sapply(x, function(x) x))[oob,]
+        colnames(xoob) = levels(y)
+        yoob <- y[oob]
+        return(do.call(measure, list(xoob, yoob, ...)))
+      } 
+    }else {
+      error <- function(x, oob, ...) {
+        xoob <- t(sapply(x, function(x) x))[oob,]
+        colnames(xoob) <- levels(y)
+        xoob <- colnames(xoob)[max.col(xoob,ties.method="first")]
+        yoob <- y[oob]
+        return(do.call(measure, list(yoob, xoob, ...)))
+      } 
+    }
+  } else {
+    error <- function(x, oob, ...) {
+      xoob <- unlist(x)[oob]
+      yoob <- y[oob]
+      return(do.call(measure, list(xoob, yoob, ...)))
+    }
   }
   
   w <- object@initweights
@@ -66,7 +93,7 @@ varImp <- function (object, mincriterion = 0, conditional = FALSE, threshold = 0
       oob <- rep(TRUE, length(xnames))
     }
     p <- party_intern(tree, inp, mincriterion, -1L, fun = "R_predict") 
-    eoob <- error(p, oob)
+    eoob <- error(p, oob, ...)
     for (j in unique(varIDs(tree))) {
       for (per in 1:nperm) {
         if (conditional || pre1.0_0) {
@@ -85,7 +112,7 @@ varImp <- function (object, mincriterion = 0, conditional = FALSE, threshold = 0
         } else {
           p <- party_intern(tree, inp, mincriterion, as.integer(j), fun = "R_predict") 
         }
-        perror[(per + (b - 1) * nperm), j] <- - (error(p,oob) - eoob)
+        perror[(per + (b - 1) * nperm), j] <- - (error(p,oob, ...) - eoob)
       }
     }
   }
