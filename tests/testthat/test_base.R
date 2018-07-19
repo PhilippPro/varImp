@@ -5,18 +5,18 @@ test_that("varImp functions", {
   library(measures)
   
   # regression
-  readingSkills.cf <- cforest(score ~ ., data = readingSkills, 
+  readingSkills.cf = cforest(score ~ ., data = readingSkills, 
     control = cforest_unbiased(mtry = 2, ntree = 50))
   varImp(object = readingSkills.cf, measure = "MSE")
   
-  iris.cf <- cforest(Species ~ ., data = iris,control = cforest_unbiased(mtry = 2, ntree = 50))
+  iris.cf = cforest(Species ~ ., data = iris,control = cforest_unbiased(mtry = 2, ntree = 50))
   varImpAUC(object = iris.cf, method = "ovo")
   # Erweitern auf beliebige Maße?
   
   # binary case
   iris2 = iris
   iris2$Species = factor(iris$Species == "versicolor")
-  iris.cf <- cforest(Species ~ ., data = iris2,control = cforest_unbiased(mtry = 2, ntree = 50))
+  iris.cf = cforest(Species ~ ., data = iris2,control = cforest_unbiased(mtry = 2, ntree = 50))
   set.seed(123)
   a = varImpAUC(object = iris.cf, method = "ova")
   set.seed(123)
@@ -30,7 +30,7 @@ test_that("varImp functions", {
   f = varImp(object = iris.cf, measure = "MMCE")
   
   # multiclass case
-  iris.cf <- cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
+  iris.cf = cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
   set.seed(123)
   a = varImpAUC(object = iris.cf, method = "ovo")
   set.seed(123)

@@ -26,11 +26,11 @@
 #' data(iris)
 #' iris2 = iris
 #' iris2$Species = factor(iris$Species == "versicolor")
-#' iris.cf <- cforest(Species ~ ., data = iris2,control = cforest_unbiased(mtry = 2, ntree = 50))
+#' iris.cf = cforest(Species ~ ., data = iris2,control = cforest_unbiased(mtry = 2, ntree = 50))
 #' set.seed(123)
 #' a = varImpACC(object = iris.cf)
 #' 
-varImpACC <- function (object, mincriterion = 0, conditional = FALSE, threshold = 0.2, 
+varImpACC = function (object, mincriterion = 0, conditional = FALSE, threshold = 0.2, 
   nperm = 1, OOB = TRUE, pre1.0_0 = conditional) { 
   return(varImp(object, mincriterion = mincriterion, conditional = conditional, threshold = threshold, nperm = nperm, 
     OOB = OOB, pre1.0_0 = pre1.0_0, measure = "ACC"))

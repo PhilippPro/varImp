@@ -45,7 +45,7 @@ Computes the variable importance regarding the AUC. It does also support multicl
  
 # multiclass case
 data(iris)
-iris.cf <- cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
+iris.cf = cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
 set.seed(123)
 a = varImpAUC(object = iris.cf, method = "ovo")
 set.seed(123)
