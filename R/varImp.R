@@ -32,7 +32,7 @@
 #' iris.cf = cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
 #' set.seed(123)
 #' a = varImp(object = iris.cf, measure = "multiclass.Brier")
-varImp = function (object, mincriterion = 0, conditional = FALSE, threshold = 0.2, 
+varImp = function(object, mincriterion = 0, conditional = FALSE, threshold = 0.2, 
   nperm = 1, OOB = TRUE, pre1.0_0 = conditional, measure = "multiclass.Brier", ...) { 
   # vgl. Janitza
   
