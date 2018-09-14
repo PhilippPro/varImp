@@ -20,14 +20,14 @@ varImp = function(object, data, target, nperm = 1, measure = "multiclass.Brier")
       print(paste("column", j, "tree", i))
       data_new = data[inbag[,i] == 0,]
       preds = predict(object, data = data_new, predict.all = TRUE)
-      predis = preds$predictions[, , 1]
+      predis = preds$predictions[, , i]
       colnames(predis) = pred_levels
       truth = data_new[, target]
       perf_old = do.call(measure, list(predis, truth))
       
       data_new[,j] = sample(data_new[,j], replace = FALSE)
       preds = predict(object, data = data_new, predict.all = TRUE)
-      predis = preds$predictions[, , 1]
+      predis = preds$predictions[, , i]
       colnames(predis) = pred_levels
       truth = data_new[, target]
       perf_new = do.call(measure, list(predis, truth))
