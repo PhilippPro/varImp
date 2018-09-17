@@ -29,8 +29,15 @@ varImp = function(model, data, target, nperm = 1, measure = "multiclass.Brier") 
       print(paste("column", j, "tree", i))
       data_new = data[inbag[,i] == 0,]
       data_new[,j] = sample(data_new[,j], replace = FALSE)
-      preds = predict(model, data = data_new, predict.all = TRUE)
-      predis = preds$predictions[, , i]
+
+      # old slow version
+      # preds = predict(model, data = data_new, predict.all = TRUE)
+      # predis = preds$predictions[, , i]
+      
+      # fast version
+      model2 <- swap_trees(model, 1, i)
+      predis <- predict(model2, data = data_new, num.trees = 1)$predictions
+
       colnames(predis) = pred_levels
       truth = data_new[, target]
       perf_new = do.call(measure, list(predis, truth))
@@ -42,6 +49,16 @@ varImp = function(model, data, target, nperm = 1, measure = "multiclass.Brier") 
   
   return(colMeans(res))
 }
+
+# Old version
+# 0.07379483 0.01249709 0.58453166 0.55452196
+# User      System verstrichen 
+# 38.940       7.796      31.104 
+
+# New version
+# 0.07558051 0.01276306 0.58440709 0.55576188
+# User      System verstrichen 
+# 10.840       1.676      11.173 
 
 library(profvis)
 profvis({vimp_brier <- varImp(model, data, target)})
