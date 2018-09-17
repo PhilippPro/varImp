@@ -11,20 +11,23 @@ varImp = function(object, data, target, nperm = 1, measure = "multiclass.Brier")
   num.trees = object$num.trees
   inbag = do.call(cbind, object$inbag.counts)
   pred_levels = levels(data[, target])
-  # Evtl. viel sinnvoller/schneller die Predictions am Ende zu aggregieren und dann das measure zu berechnen; hier muss man überlegen
+  truth = data[, target]
+  
+  # Calculate original performance
+  old_predis = predict(object, data = data, predict.all = TRUE)$predictions
+  colnames(old_predis) = pred_levels
+  res_old = numeric(num.trees)
+  for(i in 1:num.trees)
+    res_old[i] = do.call(measure, list(old_predis[inbag[,i] == 0, , i],  truth[inbag[,i] == 0]))
+
+  # todo: Put the predictions internal/only for one tree, to make them much faster
  
-  erg = matrix(NA, num.trees, length(pred_cols))
+  res_new = matrix(NA, num.trees, length(pred_cols))
   
   for(j in pred_cols) {
     for(i in 1:num.trees) { 
       print(paste("column", j, "tree", i))
       data_new = data[inbag[,i] == 0,]
-      preds = predict(object, data = data_new, predict.all = TRUE)
-      predis = preds$predictions[, , i]
-      colnames(predis) = pred_levels
-      truth = data_new[, target]
-      perf_old = do.call(measure, list(predis, truth))
-      
       data_new[,j] = sample(data_new[,j], replace = FALSE)
       preds = predict(object, data = data_new, predict.all = TRUE)
       predis = preds$predictions[, , i]
@@ -32,10 +35,12 @@ varImp = function(object, data, target, nperm = 1, measure = "multiclass.Brier")
       truth = data_new[, target]
       perf_new = do.call(measure, list(predis, truth))
       # minSign = ifelse(MEASUREMINIMIZE, 1, -1)
-      erg[i, j] = perf_new - perf_old
+      res_new[i, j] = perf_new 
     }
   }
-  return(colMeans(erg))
+  res = res_new - res_old
+  
+  return(colMeans(res))
 }
 
 library(profvis)
