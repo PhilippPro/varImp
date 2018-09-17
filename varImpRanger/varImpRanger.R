@@ -2,19 +2,19 @@ library(ranger)
 library(measures)
 
 rg.iris <- ranger(Species ~ ., data = iris, keep.inbag = TRUE, probability = TRUE)
-object = rg.iris
+model = rg.iris
 data = iris
 target = "Species"
 
-varImp = function(object, data, target, nperm = 1, measure = "multiclass.Brier") {
+varImp = function(model, data, target, nperm = 1, measure = "multiclass.Brier") {
   pred_cols = which(colnames(data) != target)
-  num.trees = object$num.trees
-  inbag = do.call(cbind, object$inbag.counts)
+  num.trees = model$num.trees
+  inbag = do.call(cbind, model$inbag.counts)
   pred_levels = levels(data[, target])
   truth = data[, target]
   
   # Calculate original performance
-  old_predis = predict(object, data = data, predict.all = TRUE)$predictions
+  old_predis = predict(model, data = data, predict.all = TRUE)$predictions
   colnames(old_predis) = pred_levels
   res_old = numeric(num.trees)
   for(i in 1:num.trees)
@@ -29,7 +29,7 @@ varImp = function(object, data, target, nperm = 1, measure = "multiclass.Brier")
       print(paste("column", j, "tree", i))
       data_new = data[inbag[,i] == 0,]
       data_new[,j] = sample(data_new[,j], replace = FALSE)
-      preds = predict(object, data = data_new, predict.all = TRUE)
+      preds = predict(model, data = data_new, predict.all = TRUE)
       predis = preds$predictions[, , i]
       colnames(predis) = pred_levels
       truth = data_new[, target]
@@ -44,6 +44,6 @@ varImp = function(object, data, target, nperm = 1, measure = "multiclass.Brier")
 }
 
 library(profvis)
-profvis({vimp_brier <- varImp(object, data, target)})
+profvis({vimp_brier <- varImp(model, data, target)})
 vimp_brier
 
