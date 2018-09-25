@@ -15,7 +15,6 @@ swap_trees <- function(rf, i, j) {
     res$forest$terminal.class.counts[[i]] <- rf$forest$terminal.class.counts[[j]]
     res$forest$terminal.class.counts[[j]] <- rf$forest$terminal.class.counts[[i]]
   }
-  
   res
 }
 

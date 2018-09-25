@@ -41,4 +41,11 @@ test_that("varImp functions", {
   expect_true(all(!is.na(a)))
   expect_true(all(!is.na(b)))
   expect_true(all(!is.na(c)))
+  
+  # ranger
+  library(ranger)
+  iris.rg = ranger(Species ~ ., data = iris, keep.inbag = TRUE, probability = TRUE)
+  vimp.ranger = varImpRanger(object = iris.rg, data = iris, target = "Species")
+  expect_true(is.numeric(vimp.ranger))
+  expect_true(all(!is.na(vimp.ranger)))
 })

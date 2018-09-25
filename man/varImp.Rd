@@ -9,21 +9,21 @@ varImp(object, mincriterion = 0, conditional = FALSE, threshold = 0.2,
   measure = "multiclass.Brier", ...)
 }
 \arguments{
-\item{object}{an object as returned by cforest.}
+\item{object}{An object as returned by cforest.}
 
-\item{mincriterion}{the value of the test statistic or 1 - p-value that must be exceeded in order to include a 
+\item{mincriterion}{The value of the test statistic or 1 - p-value that must be exceeded in order to include a 
 split in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.}
 
-\item{conditional}{the value of the test statistic or 1 - p-value that must be exceeded in order to include a split 
+\item{conditional}{The value of the test statistic or 1 - p-value that must be exceeded in order to include a split 
 in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.}
 
-\item{threshold}{the threshold value for (1 - p-value) of the association between the variable of interest and a 
+\item{threshold}{The threshold value for (1 - p-value) of the association between the variable of interest and a 
 covariate, which must be exceeded inorder to include the covariate in the conditioning scheme for the variable of 
 interest (only relevant if conditional = TRUE). A threshold value of zero includes all covariates.}
 
-\item{nperm}{the number of permutations performed.}
+\item{nperm}{The number of permutations performed.}
 
-\item{OOB}{a logical determining whether the importance is computed from the out-of-bag sample or the learning 
+\item{OOB}{A logical determining whether the importance is computed from the out-of-bag sample or the learning 
 sample (not suggested).}
 
 \item{pre1.0_0}{Prior to party version 1.0-0, the actual data values were permuted according to the original 
@@ -32,12 +32,12 @@ of interest are permuted as described by Hapfelmeier et al. (2012), which allows
 explanatory variables and is more efficient wrt memory consumption and computing time. This method does not 
 apply to conditional variable importances.}
 
-\item{measure}{the name of the measure of the 'measures' package that should be used for the variable importance calculation.}
+\item{measure}{The name of the measure of the 'measures' package that should be used for the variable importance calculation.}
 
-\item{...}{further arguments (like positive or negativ class) that are needed by the measure}
+\item{...}{Further arguments (like positive or negativ class) that are needed by the measure.}
 }
 \value{
-vector with computed permutation importance for each variable
+Vector with computed permutation importance for each variable.
 }
 \description{
 Computes the variable importance for arbitrary measures from the 'measures' package.
@@ -50,5 +50,6 @@ Many measures have not been tested for the usefulness of random forests variable
 data(iris)
 iris.cf = cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
 set.seed(123)
-a = varImp(object = iris.cf, measure = "multiclass.Brier")
+vimp = varImp(object = iris.cf, measure = "multiclass.Brier")
+vimp
 }
