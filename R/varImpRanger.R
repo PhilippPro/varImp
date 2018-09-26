@@ -25,13 +25,13 @@ varImpRanger = function(object, data, target, nperm = 1, measure = "multiclass.B
   measureList = listAllMeasures()
   if (!(measure %in% measureList[, 1]))
     stop("measure should be a measure of the measures package")
+  measure.minimize = measureList$minimize[measureList[,1] == measure]
   
   pred_cols = which(colnames(data) != target)
   num.trees = object$num.trees
   inbag = do.call(cbind, object$inbag.counts)
   pred_levels = levels(data[, target])
   truth = data[, target]
-  measure.minimize = measureList$minimize[measureList[,1] == measure]
   
   # Calculate original performance
   old_predis = predict(object, data = data, predict.all = TRUE)$predictions
