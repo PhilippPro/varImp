@@ -22,6 +22,8 @@ varImpRanger_test = function(object, data, target, nperm = 1, measure = "multicl
   # Some tests
   if(!("ranger" %in% class(object)))
     stop("Object is not a 'ranger' model")
+  if(!(object$treetype %in% c("Regression", "Probability estimation")))
+    stop("Object is not a regression or probability forest")
   measureList = listAllMeasures()
   if (!(measure %in% measureList[, 1]))
     stop("measure should be a measure of the measures package")
@@ -37,8 +39,12 @@ varImpRanger_test = function(object, data, target, nperm = 1, measure = "multicl
   old_predis = predict(object, data = data, predict.all = TRUE)$predictions
   colnames(old_predis) = pred_levels
   res_old = numeric(num.trees)
-  for(i in 1:num.trees)
-    res_old[i] = do.call(measure, list(old_predis[inbag[,i] == 0, , i],  truth[inbag[,i] == 0]))
+  for(i in 1:num.trees){
+    if(object$treetype == "Regression")
+      res_old[i] = do.call(measure, list(old_predis[inbag[,i] == 0,  i],  truth[inbag[,i] == 0]))
+    if(object$treetype == "Probability estimation")
+      res_old[i] = do.call(measure, list(old_predis[inbag[,i] == 0, , i],  truth[inbag[,i] == 0]))
+  }
   
   # Calculate permuted performance
   res_new = matrix(NA, num.trees, length(pred_cols))
@@ -62,7 +68,6 @@ varImpRanger_test = function(object, data, target, nperm = 1, measure = "multicl
   
   return(list(res = res, vimp = colMeans(res)))
 }
-
 swap_trees = function(rf, i, j) {
   res = rf
   
@@ -81,10 +86,77 @@ swap_trees = function(rf, i, j) {
   res
 }
 
-
+devtools::install_github("mlr-org/measures")
+devtools::install_github("PhilippPro/varImp")
 library(ranger)
-iris.rg = ranger(Species ~ ., data = iris, keep.inbag = TRUE, probability = TRUE)
-vimp.ranger = varImpRanger_test(object = iris.rg, data = iris, target = "Species")
+library(varImp)
 
-apply(vimp.ranger$res > 0, 2, mean)
+iris.rg = ranger(Species ~ ., data = iris, keep.inbag = TRUE, probability = TRUE)
+vimp.ranger = varImpRanger_test(object = iris.rg, data = iris, target = "Species", measure = "multiclass.Brier") # MMCE geht nicht!
+
+# binomial test
+bin.test_greater = function(y) {
+  x = sum(y > 0)
+  n = length(y)
+  binom.test(x, n, p = 0.5, alternative = "greater")$p.value
+}
+
+bin.test_two.sided = function(y) {
+  x = sum(y > 0)
+  n = length(y)
+  binom.test(x, n, p = 0.5, alternative = "two.sided")$p.value
+}
+
+# z-Scores
+p_value = function(x) 1 - pnorm(mean(x) / (sd(x)/sqrt(length(x))))
+
 vimp.ranger$vimp
+apply(vimp.ranger$res < 0, 2, mean)
+round(apply(vimp.ranger$res, 2, bin.test), 3)
+apply(vimp.ranger$res, 2, p_value)
+
+# Simulation
+
+sim_data = function(n = 20) {
+  x1 = runif(n,5,95)
+  x2 = runif(n,5,95)
+  x3 = rbinom(n,1,.5)
+  
+  b0 = 17
+  b1 = 0
+  b2 = 0.037
+  b3 = -5.2
+  sigma = 1.4
+  
+  eps = rnorm(n, 0, sigma)
+  y = b0 + b1*x1 + b2*x2  + b3*x3 + eps
+  X = cbind(x1, x2, x3)
+  return(data.frame(X, y))
+}
+
+sim = sim_data(n = 1000)
+mod = ranger(y ~ ., data = sim, num.trees = 1000, keep.inbag = TRUE)
+vimp.ranger = varImpRanger_test(object = mod, data = sim, target = "y", measure = "MSE")
+apply(vimp.ranger$res < 0, 2, mean)
+# n = 100, 1000 Baeume: 0.429 0.243 0.000
+# n = 1000, 1000 Baeume: 0.411 0.006 0.000
+# n = 10000, 1000 Baeume: 0.496 0.003 0.000
+# n = 100000, 1000 Baeume: 0.469 0.002 0.000
+
+round(apply(vimp.ranger$res, 2, bin.test_greater), 3)
+# n = 100, 1000 Baeume: 0.98 0.00 0.00
+# n = 1000, 1000 Baeume: 0.747 0.000 0.000
+# n = 10000, 1000 Baeume: 0.803 0.000 0.000
+# Scheint dann öfter > 0 zu sein, wenn nicht relevant! (warum?)
+
+round(apply(vimp.ranger$res, 2, bin.test_two.sided), 3)
+# n = 100, 1000 Baeume: 0.046 0.000 0.000
+# n = 1000, 1000 Baeume: 0.548 0.000 0.000
+# n = 10000, 1000 Baeume: 0.018 0.000 0.000
+
+apply(vimp.ranger$res, 2, p_value)
+# n = 100, 1000 Baeume: 1.895139e-05 0.000000e+00 0.000000e+00
+# n = 1000, 1000 Baeume: 0.09871624 0.00000000 0.00000000
+# n = 10000, 1000 Baeume: 0.695337 0.000000 0.000000
+
+summary(lm(y~., data = sim))
