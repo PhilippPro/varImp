@@ -5,8 +5,7 @@
 #' @param object An object as returned by cforest.
 #' @param mincriterion The value of the test statistic or 1 - p-value that must be exceeded in order to include a 
 #' split in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.
-#' @param conditional The value of the test statistic or 1 - p-value that must be exceeded in order to include a split 
-#' in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.
+#' @param conditional  a logical determining whether unconditional or conditional computation of the importance is performed. 
 #' @param threshold The threshold value for (1 - p-value) of the association between the variable of interest and a 
 #' covariate, which must be exceeded inorder to include the covariate in the conditioning scheme for the variable of 
 #' interest (only relevant if conditional = TRUE). A threshold value of zero includes all covariates.

@@ -14,8 +14,7 @@ varImp(object, mincriterion = 0, conditional = FALSE,
 \item{mincriterion}{The value of the test statistic or 1 - p-value that must be exceeded in order to include a 
 split in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.}
 
-\item{conditional}{The value of the test statistic or 1 - p-value that must be exceeded in order to include a split 
-in the computation of the importance. The default mincriterion = 0 guarantees that all splits are included.}
+\item{conditional}{a logical determining whether unconditional or conditional computation of the importance is performed.}
 
 \item{threshold}{The threshold value for (1 - p-value) of the association between the variable of interest and a 
 covariate, which must be exceeded inorder to include the covariate in the conditioning scheme for the variable of 
