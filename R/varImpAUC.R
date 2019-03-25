@@ -75,8 +75,22 @@ varImpAUC = function (object, mincriterion = 0, conditional = FALSE, threshold =
         xoob = sapply(x, function(x) x[1])[oob]
         yoob = y[oob]
         pos = levels(y)[1]
+        
+        which1 <- which(yoob==levels(y)[1])
+        noob1 <- length(which1)
+        noob <- length(yoob)
+        if (noob1==0|noob1==noob) { return(NA) } # AUC cannot be computed if all OOB-observations are from one class
         return(measures::AUC(xoob, yoob, positive = pos))
       }
+      # error <- function(x, oob) {
+      #   xoob <- sapply(x, function(x) x[1])[oob]
+      #   yoob <- y[oob]
+      #   which1 <- which(yoob==levels(y)[1])
+      #   noob1 <- length(which1)
+      #   noob <- length(yoob)
+      #   if (noob1==0|noob1==noob) { return(NA) }       # AUC cannot be computed if all OOB-observations are from one class
+      #   return(1-sum(kronecker(xoob[which1] , xoob[-which1],">"))/(noob1*(length(yoob)-noob1)))       # calculate AUC
+      # }
     }
   } else {
     if (ORDERED) {
@@ -100,7 +114,7 @@ varImpAUC = function (object, mincriterion = 0, conditional = FALSE, threshold =
     }
     p = party_intern(tree, inp, mincriterion, -1L, fun = "R_predict") 
     eoob = error(p, oob)
-    for (j in unique(varIDs(tree))) {
+    for (j in unique(party:::varIDs(tree))) {
       for (per in 1:nperm) {
         if (conditional || pre1.0_0) {
           tmp = inp

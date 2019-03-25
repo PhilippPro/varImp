@@ -4,9 +4,9 @@
 \alias{varImpAUC}
 \title{varImpAUC}
 \usage{
-varImpAUC(object, mincriterion = 0, conditional = FALSE, threshold = 0.2,
-  nperm = 1, OOB = TRUE, pre1.0_0 = conditional, method = c("ovo",
-  "ova"))
+varImpAUC(object, mincriterion = 0, conditional = FALSE,
+  threshold = 0.2, nperm = 1, OOB = TRUE, pre1.0_0 = conditional,
+  method = c("ovo", "ova"))
 }
 \arguments{
 \item{object}{An object as returned by cforest.}

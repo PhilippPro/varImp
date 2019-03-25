@@ -4,8 +4,8 @@
 \alias{varImp}
 \title{varImp}
 \usage{
-varImp(object, mincriterion = 0, conditional = FALSE, threshold = 0.2,
-  nperm = 1, OOB = TRUE, pre1.0_0 = conditional,
+varImp(object, mincriterion = 0, conditional = FALSE,
+  threshold = 0.2, nperm = 1, OOB = TRUE, pre1.0_0 = conditional,
   measure = "multiclass.Brier", ...)
 }
 \arguments{

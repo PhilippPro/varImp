@@ -95,25 +95,42 @@ iris.rg = ranger(Species ~ ., data = iris, keep.inbag = TRUE, probability = TRUE
 vimp.ranger = varImpRanger_test(object = iris.rg, data = iris, target = "Species", measure = "multiclass.Brier") # MMCE geht nicht!
 
 # binomial test
-bin.test_greater = function(y) {
+bin.test_greater = function(y, zeros = FALSE) {
+  #if(!(zeros))
+  #  y = y[y!=0] #  Diese Loesung ist nicht wirklich sauber
   x = sum(y > 0)
   n = length(y)
   binom.test(x, n, p = 0.5, alternative = "greater")$p.value
 }
 
-bin.test_two.sided = function(y) {
+bin.test_two.sided = function(y, zeros = FALSE) {
+  #if(!(zeros))
+  #  y = y[y!=0] #  Diese Loesung ist nicht wirklich sauber
   x = sum(y > 0)
   n = length(y)
   binom.test(x, n, p = 0.5, alternative = "two.sided")$p.value
 }
 
+# wilcoxon test
+wilcoxon.test = function(y, zeros = FALSE) {
+  #if(!(zeros))
+  #  y = y[y!=0] #  Diese Loesung ist nicht wirklich sauber
+  wilcox.test(y, mu = 10^-10, alternative = "greater")$p.value
+}
+
 # z-Scores
-p_value = function(x) 1 - pnorm(mean(x) / (sd(x)/sqrt(length(x))))
+p_value = function(y, zeros = FALSE) {
+  #if(!(zeros))
+  #  y = y[y!=0] #  Diese Loesung ist nicht wirklich sauber
+  t.test(y, alternative = "greater", mu = 0)$p.value #  1 - pnorm(mean(x) / (sd(x)/sqrt(length(x))))
+} 
 
 vimp.ranger$vimp
 apply(vimp.ranger$res < 0, 2, mean)
-round(apply(vimp.ranger$res, 2, bin.test), 3)
-apply(vimp.ranger$res, 2, p_value)
+round(apply(vimp.ranger$res, 2, bin.test_greater), 3)
+round(apply(vimp.ranger$res, 2, bin.test_two.sided), 3)
+round(apply(vimp.ranger$res, 2, wilcoxon.test), 3)
+round(apply(vimp.ranger$res, 2, p_value), 3)
 
 # Simulation
 
@@ -135,9 +152,9 @@ sim_data = function(n = 20) {
 }
 
 sim = sim_data(n = 1000)
-mod = ranger(y ~ ., data = sim, num.trees = 1000, keep.inbag = TRUE)
+mod = ranger(y ~ ., data = sim, num.trees = 10000, keep.inbag = TRUE)
 vimp.ranger = varImpRanger_test(object = mod, data = sim, target = "y", measure = "MSE")
-apply(vimp.ranger$res < 0, 2, mean)
+apply(vimp.ranger$res[1:10000,] < 0, 2, mean)
 # n = 100, 1000 Baeume: 0.429 0.243 0.000
 # n = 1000, 1000 Baeume: 0.411 0.006 0.000
 # n = 10000, 1000 Baeume: 0.496 0.003 0.000
@@ -147,16 +164,170 @@ round(apply(vimp.ranger$res, 2, bin.test_greater), 3)
 # n = 100, 1000 Baeume: 0.98 0.00 0.00
 # n = 1000, 1000 Baeume: 0.747 0.000 0.000
 # n = 10000, 1000 Baeume: 0.803 0.000 0.000
-# Scheint dann öfter > 0 zu sein, wenn nicht relevant! (warum?)
+# Scheint dann öfter > 0 zu sein, wenn nicht relevant? Ist dem überhaupt so? -> öfters simulieren...
 
 round(apply(vimp.ranger$res, 2, bin.test_two.sided), 3)
 # n = 100, 1000 Baeume: 0.046 0.000 0.000
 # n = 1000, 1000 Baeume: 0.548 0.000 0.000
 # n = 10000, 1000 Baeume: 0.018 0.000 0.000
 
-apply(vimp.ranger$res, 2, p_value)
+round(apply(vimp.ranger$res, 2, wilcoxon.test), 3)
+
+round(apply(vimp.ranger$res, 2, p_value), 3)
 # n = 100, 1000 Baeume: 1.895139e-05 0.000000e+00 0.000000e+00
 # n = 1000, 1000 Baeume: 0.09871624 0.00000000 0.00000000
 # n = 10000, 1000 Baeume: 0.695337 0.000000 0.000000
 
-summary(lm(y~., data = sim))
+a = summary(lm(y~., data = sim))
+
+# Distribution of the p_values under the Null-Hypothesis
+
+n_exp = 1000
+p_matrix = array(NA, dim = c(n_exp, 7, 3))
+resis = list()
+
+for(i in 1:100) {
+  print(i)
+  set.seed(i)
+  sim = sim_data(n = 100)
+  mod = ranger(y ~ ., data = sim, num.trees = 10000, keep.inbag = TRUE)
+  invisible(capture.output(vimp.ranger <- varImpRanger_test(object = mod, data = sim, target = "y", measure = "MSE")))
+  resis[[i]] = vimp.ranger$res
+  p_matrix[i, 1, ] = apply(resis[[i]] < 0, 2, mean)
+  p_matrix[i, 2, ] = apply(resis[[i]] > 0, 2, mean)
+  p_matrix[i, 3, ] = round(apply(resis[[i]], 2, bin.test_greater), 10)
+  p_matrix[i, 4, ] = round(apply(resis[[i]], 2, bin.test_two.sided), 10)
+  p_matrix[i, 5, ] = round(apply(resis[[i]], 2, wilcoxon.test), 10)
+  p_matrix[i, 6, ] = round(apply(resis[[i]], 2, p_value), 10)
+  p_matrix[i, 7, ] = summary(lm(y~., data = sim))$coefficients[2:4,4]
+
+  save(resis, p_matrix, file = "./varImpRanger/simulation.RData")
+}
+
+load("./varImpRanger/simulation.RData")
+
+par(mfrow = c(4,8))
+mittel = numeric(100)
+for(i in 1:100) {
+  hist(resis[[i]][,1], main = i)
+  print(mittel[i] <- mean(resis[[i]][,1]))
+}
+
+mean(mittel)
+mean(mittel >0)
+which(mittel > 0)
+which(p_matrix[, 3, 1] <0.05)
+
+sum(p_matrix[, 3, 1] >0.05, na.rm = T)
+sum(p_matrix[, 4, 1] >0.05, na.rm = T)
+sum(p_matrix[, 5, 1] >0.05, na.rm = T)
+sum(p_matrix[, 6, 1] >0.05, na.rm = T)
+sum(p_matrix[, 7, 1] >0.05, na.rm = T)
+
+sum(resis[[i]][,1] > 0)
+sum(resis[[i]][,1] <= 0)
+
+load("./varImpRanger/simulation.RData")
+
+# some Graphical analysis
+hist(vimp.ranger$res[,1]) # zu viele exakt Null
+a = vimp.ranger$res[,1]
+sum(a==0)
+mean(a)
+mean(a[a!=0])
+qqnorm(a)
+qqline(a)
+hist(a)
+mean(a>0)
+round(bin.test_greater(a), 3)
+round(bin.test_greater(a, zeros = TRUE), 3)
+round(p_value(a), 3)
+round(p_value(a, zeros = TRUE), 3)
+
+p_matrix[1:7, , ]
+
+# meistens nur klare Trennungen bei  den anderen Tests...
+
+for(i in 1:ncol(p_matrix))
+  print(hist(p_matrix[,i, 1], main = i))
+
+
+
+
+# Second simulation
+
+n_exp = 1000
+p_matrix = array(NA, dim = c(n_exp, 7, 3))
+resis = list()
+
+for(i in 1:100) {
+  print(i)
+  set.seed(i)
+  sim = sim_data(n = 500)
+  mod = ranger(y ~ ., data = sim, num.trees = 10000, keep.inbag = TRUE)
+  invisible(capture.output(vimp.ranger <- varImpRanger_test(object = mod, data = sim, target = "y", measure = "MSE")))
+  resis[[i]] = vimp.ranger$res
+  p_matrix[i, 1, ] = apply(resis[[i]] < 0, 2, mean)
+  p_matrix[i, 2, ] = apply(resis[[i]] > 0, 2, mean)
+  p_matrix[i, 3, ] = round(apply(resis[[i]], 2, bin.test_greater), 10)
+  p_matrix[i, 4, ] = round(apply(resis[[i]], 2, bin.test_two.sided), 10)
+  p_matrix[i, 5, ] = round(apply(resis[[i]], 2, wilcoxon.test), 10)
+  p_matrix[i, 6, ] = round(apply(resis[[i]], 2, p_value), 10)
+  p_matrix[i, 7, ] = summary(lm(y~., data = sim))$coefficients[2:4,4]
+  
+  save(resis, p_matrix, file = "./varImpRanger/simulation2.RData")
+}
+
+load("./varImpRanger/simulation2.RData")
+
+par(mfrow = c(4,8))
+mittel = numeric(100)
+for(i in 1:100) {
+  hist(resis[[i]][,1], main = i)
+  print(mittel[i] <- mean(resis[[i]][,1]))
+}
+
+mean(mittel)
+mean(mittel >0)
+which(mittel > 0)
+which(p_matrix[, 3, 1] <0.05)
+
+sum(p_matrix[, 3, 1] >0.05, na.rm = T)
+sum(p_matrix[, 4, 1] >0.05, na.rm = T)
+sum(p_matrix[, 5, 1] >0.05, na.rm = T)
+sum(p_matrix[, 6, 1] >0.05, na.rm = T)
+sum(p_matrix[, 7, 1] >0.05, na.rm = T)
+
+sum(resis[[i]][,1] > 0)
+sum(resis[[i]][,1] <= 0)
+
+load("./varImpRanger/simulation.RData")
+
+# some Graphical analysis
+hist(vimp.ranger$res[,1]) # zu viele exakt Null
+a = vimp.ranger$res[,1]
+sum(a==0)
+mean(a)
+mean(a[a!=0])
+qqnorm(a)
+qqline(a)
+hist(a)
+mean(a>0)
+round(bin.test_greater(a), 3)
+round(bin.test_greater(a, zeros = TRUE), 3)
+round(p_value(a), 3)
+round(p_value(a, zeros = TRUE), 3)
+
+p_matrix[1:7, , ]
+
+# meistens nur klare Trennungen bei den anderen Tests...
+
+for(i in 1:ncol(p_matrix))
+  print(hist(p_matrix[,i, ]))
+
+# 4 kann man wegschmeissen
+# 3,5,6 könne man skalieren, so dass sie Varianz 1 haben?
+
+
+
+# wilcoxon, binomial und silkes test
