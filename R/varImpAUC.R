@@ -114,7 +114,7 @@ varImpAUC = function (object, mincriterion = 0, conditional = FALSE, threshold =
     }
     p = party_intern(tree, inp, mincriterion, -1L, fun = "R_predict") 
     eoob = error(p, oob)
-    for (j in unique(party:::varIDs(tree))) {
+    for (j in unique(varIDs(tree))) {
       for (per in 1:nperm) {
         if (conditional || pre1.0_0) {
           tmp = inp
