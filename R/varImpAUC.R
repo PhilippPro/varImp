@@ -71,8 +71,8 @@ varImpAUC = function (object, mincriterion = 0, conditional = FALSE, threshold =
       #     return(measures::multiclass.AU1U(xoob, yoob))
       #   }
       # }
-      ############# AUC-Berechnung für den Fall einer binären Zielgröße (s. Janitza) ############################
     } else { 
+      ############# AUC-Berechnung für den Fall einer binären Zielgröße (s. Janitza) ############################
       error = function(x, oob) {
         xoob = sapply(x, function(x) x[1])[oob]
         yoob = y[oob]
