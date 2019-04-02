@@ -56,19 +56,21 @@ varImpAUC = function (object, mincriterion = 0, conditional = FALSE, threshold =
     stop("only calculable for classification")
   if (CLASS) {
     if (nlevels(y) > 2) {
-      if(method=="ova"){ ########################################################### one-versus-all Verfahren 
-        error = function(x, oob) {
-          xoob = t(sapply(x, function(x) x))[oob,]
-          yoob = y[oob]
-          return(measures::multiclass.AUNU(xoob, yoob))
-        }
-      } else if(method=="ovo"){ ############################# one-versus-one, paarweises Verfahren (Hand & Till)
-        error = function(x, oob) {
-          xoob = t(sapply(x, function(x) x))[oob,]
-          yoob = y[oob]
-          return(measures::multiclass.AU1U(xoob, yoob))
-        }
-      }
+      stop("varImpAUC() is only usable for binary classification. For multiclass classification please use the standard varImp() function.")
+      # MULTICLASS
+      # if(method=="ova"){ ########################################################### one-versus-all Verfahren 
+      #   error = function(x, oob) {
+      #     xoob = t(sapply(x, function(x) x))[oob,]
+      #     yoob = y[oob]
+      #     return(measures::multiclass.AUNU(xoob, yoob))
+      #   }
+      # } else if(method=="ovo"){ ############################# one-versus-one, paarweises Verfahren (Hand & Till)
+      #   error = function(x, oob) {
+      #     xoob = t(sapply(x, function(x) x))[oob,]
+      #     yoob = y[oob]
+      #     return(measures::multiclass.AU1U(xoob, yoob))
+      #   }
+      # }
       ############# AUC-Berechnung für den Fall einer binären Zielgröße (s. Janitza) ############################
     } else { 
       error = function(x, oob) {
