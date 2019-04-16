@@ -5,8 +5,7 @@
 \title{varImpAUC}
 \usage{
 varImpAUC(object, mincriterion = 0, conditional = FALSE,
-  threshold = 0.2, nperm = 1, OOB = TRUE, pre1.0_0 = conditional,
-  method = c("ovo", "ova"))
+  threshold = 0.2, nperm = 1, OOB = TRUE, pre1.0_0 = conditional)
 }
 \arguments{
 \item{object}{An object as returned by cforest.}
@@ -31,25 +30,26 @@ permutation importance suggested by Breiman (2001). Now the assignments to child
 of interest are permuted as described by Hapfelmeier et al. (2012), which allows for missing values in the 
 explanatory variables and is more efficient wrt memory consumption and computing time. This method does not 
 apply to conditional variable importances.}
-
-\item{method}{Which method should be used for multiclass AUC. Possible choices
-are one-versus-one ("ovo") classes and one-versus all ("ova") classes.}
 }
 \value{
 Vector with computed permutation importance for each variable
 }
 \description{
-Computes the variable importance regarding the AUC. It does also support multiclass classification.
+Computes the variable importance regarding the AUC. Bindings are not taken into account in the AUC definition as they did 
+not provide as good results as the version without bindings in the paper of Janitza et. al (2013) (see References section).
+}
+\details{
+For using the original AUC definition and multiclass AUC you can use the varImp function and specify the particular measure.
 }
 \examples{
  
 # multiclass case
 data(iris)
-iris.cf = cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
+iris2 = iris
+iris2$Species = factor(iris$Species == "versicolor")
+iris.cf = cforest(Species ~ ., data = iris2,control = cforest_unbiased(mtry = 2, ntree = 50))
 set.seed(123)
-a = varImpAUC(object = iris.cf, method = "ovo")
-set.seed(123)
-b = varImpAUC(object = iris.cf, method = "ova") 
+varImpAUC(object = iris.cf)
 }
 \references{
 https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-119
