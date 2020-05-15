@@ -4,8 +4,15 @@
 \alias{varImpACC}
 \title{varImpACC}
 \usage{
-varImpACC(object, mincriterion = 0, conditional = FALSE,
-  threshold = 0.2, nperm = 1, OOB = TRUE, pre1.0_0 = conditional)
+varImpACC(
+  object,
+  mincriterion = 0,
+  conditional = FALSE,
+  threshold = 0.2,
+  nperm = 1,
+  OOB = TRUE,
+  pre1.0_0 = conditional
+)
 }
 \arguments{
 \item{object}{An object as returned by cforest.}

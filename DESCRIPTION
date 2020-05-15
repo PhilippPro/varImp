@@ -1,6 +1,6 @@
 Package: varImp
 Title: RF Variable Importance for Arbitrary Measures
-Version: 0.3
+Version: 0.4
 Authors@R: c(
     person("Philipp", "Probst", email = "philipp_probst@gmx.de", role = c("aut", "cre")),
     person("Silke","Janitza", email = "silke.janitza@gmail.com", role = "ctb"))
@@ -13,8 +13,8 @@ Depends:
     party,
     stats
 LazyData: true
-Date: 2019-04-16
-RoxygenNote: 6.1.1
+Date: 2020-05-15
+RoxygenNote: 7.0.2
 Suggests:
     testthat,
     ranger

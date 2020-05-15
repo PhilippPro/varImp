@@ -4,8 +4,7 @@
 \alias{varImpRanger}
 \title{varImpRanger}
 \usage{
-varImpRanger(object, data, target, nperm = 1,
-  measure = "multiclass.Brier")
+varImpRanger(object, data, target, nperm = 1, measure = "multiclass.Brier")
 }
 \arguments{
 \item{object}{An object as returned by cforest. \code{\link[ranger]{ranger}} with option \code{keep.inbag = TRUE}.}

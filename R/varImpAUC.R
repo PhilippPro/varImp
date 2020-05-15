@@ -87,7 +87,7 @@ varImpAUC = function (object, mincriterion = 0, conditional = FALSE, threshold =
       error <- function(x, oob) {
         xoob <- sapply(x, function(x) x[1])[oob]
         yoob <- y[oob]
-        which1 <- which(yoob==levels(y)[1])
+        which1 <- which(yoob==levels(y)[2])
         noob1 <- length(which1)
         noob <- length(yoob)
         if (noob1==0|noob1==noob) { return(NA) }       # AUC cannot be computed if all OOB-observations are from one class

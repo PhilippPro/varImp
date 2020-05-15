@@ -68,6 +68,8 @@ varImp = function(object, mincriterion = 0, conditional = FALSE, threshold = 0.2
       error = function(x, oob, ...) {
         xoob = t(sapply(x, function(x) x))[oob,]
         colnames(xoob) = levels(y)
+        if (measure == "AUC")
+          xoob = xoob[,2]
         yoob = y[oob]
         return(do.call(measure, list(xoob, yoob, ...)))
       } 
@@ -75,6 +77,8 @@ varImp = function(object, mincriterion = 0, conditional = FALSE, threshold = 0.2
       error = function(x, oob, ...) {
         xoob = t(sapply(x, function(x) x))[oob,]
         colnames(xoob) = levels(y)
+        if (measure == "AUC")
+          xoob = xoob[,2]
         xoob = colnames(xoob)[max.col(xoob,ties.method="first")]
         yoob = y[oob]
         return(do.call(measure, list(yoob, xoob, ...)))

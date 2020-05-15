@@ -23,6 +23,7 @@ test_that("varImp functions", {
   d = varImp(object = iris.cf, measure = "Brier", positive = "FALSE")
   e = varImp(object = iris.cf, measure = "ACC")
   f = varImp(object = iris.cf, measure = "MMCE")
+  g = varImp(object = iris.cf, measure = "AUC", positive = "TRUE")
   expect_true(all(!is.na(d)))
   expect_true(all(!is.na(e)))
   expect_true(all(!is.na(f)))
