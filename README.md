@@ -9,4 +9,8 @@ The development version
     iris.cf <- cforest(Species ~ ., data = iris, control = cforest_unbiased(mtry = 2, ntree = 50))
     varImp(object = iris.cf, measure = "multiclass.Brier")
     varImpACC(object = iris.cf)
+    # Two classes:
+    iris2 = iris
+    iris2$Species = factor(iris$Species == "versicolor")
+    iris.cf = cforest(Species ~ ., data = iris2,control = cforest_unbiased(mtry = 2, ntree = 50))
     varImpAUC(object = iris.cf)
