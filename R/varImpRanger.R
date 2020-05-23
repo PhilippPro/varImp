@@ -14,10 +14,12 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' library(ranger)
 #' iris.rg = ranger(Species ~ ., data = iris, keep.inbag = TRUE, probability = TRUE)
 #' vimp.ranger = varImpRanger(object = iris.rg, data = iris, target = "Species")
 #' vimp.ranger
+#' }
 varImpRanger = function(object, data, target, nperm = 1, measure = "multiclass.Brier") {
   # Some tests
   if(!("ranger" %in% class(object)))

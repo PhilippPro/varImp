@@ -24,8 +24,10 @@ Vector with computed permutation importance for each variable.
 Computes the variable importance for ranger models and for arbitrary measures from the 'measures' package.
 }
 \examples{
+\dontrun{
 library(ranger)
 iris.rg = ranger(Species ~ ., data = iris, keep.inbag = TRUE, probability = TRUE)
 vimp.ranger = varImpRanger(object = iris.rg, data = iris, target = "Species")
 vimp.ranger
+}
 }
