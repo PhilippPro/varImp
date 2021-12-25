@@ -29,6 +29,7 @@ varImpRanger = function(object, data, target, nperm = 1, measure = "multiclass.B
     stop("measure should be a measure of the measures package")
   measure.minimize = measureList$minimize[measureList[,1] == measure]
   
+  type = object$treetype
   pred_cols = which(colnames(data) != target)
   num.trees = object$num.trees
   inbag = do.call(cbind, object$inbag.counts)
@@ -39,9 +40,14 @@ varImpRanger = function(object, data, target, nperm = 1, measure = "multiclass.B
   old_predis = predict(object, data = data, predict.all = TRUE)$predictions
   colnames(old_predis) = pred_levels
   res_old = numeric(num.trees)
-  for(i in 1:num.trees)
-    res_old[i] = do.call(measure, list(old_predis[inbag[,i] == 0, , i],  truth[inbag[,i] == 0]))
-  
+  if(type == "Classification") {
+    for(i in 1:num.trees)
+      res_old[i] = do.call(measure, list(old_predis[inbag[,i] == 0,, i],  truth[inbag[,i] == 0]))
+  }
+  if(type == "Regression") {
+    for(i in 1:num.trees)
+      res_old[i] = do.call(measure, list(old_predis[inbag[,i] == 0, i],  truth[inbag[,i] == 0]))
+  }
   # Calculate permuted performance
   res_new = matrix(NA, num.trees, length(pred_cols))
   for(j in pred_cols) {
